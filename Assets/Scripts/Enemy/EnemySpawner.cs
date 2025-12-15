@@ -28,12 +28,16 @@ public class EnemySpawner : MonoBehaviour
 
     [Header("Spawner Attributes")]
     float spawnTimer;
+
     public float waveInterval; // Time between waves
     
     // IMPORTANT: Initialize to TRUE so the first wave starts immediately
     bool isWaveActive = true; 
 
     Transform player;
+
+    float minSpawnDistance = 20f; // Minimum distance (Must be larger than screen!)
+    public float maxSpawnDistance = 30f;
 
     void Start()
     {
@@ -118,10 +122,13 @@ public class EnemySpawner : MonoBehaviour
                 if (enemyGroup.spawnCount < enemyGroup.enemyCount)
                 {
                     // Random Position near player
-                    Vector2 spawnPosition = new Vector2(
-                        player.transform.position.x + Random.Range(-10f, 10f), 
-                        player.transform.position.y + Random.Range(-10f, 10f)
-                    );
+                    Vector2 randomDirection = Random.insideUnitCircle.normalized;
+
+                    // 2. Pick a random distance (Between the "Donut hole" and the outer edge)
+                    float randomDistance = Random.Range(minSpawnDistance, maxSpawnDistance);
+
+                    // 3. Calculate the final position
+                    Vector3 spawnPosition = player.transform.position + (Vector3)(randomDirection * randomDistance);
                     
                     Instantiate(enemyGroup.enemyPrefab, spawnPosition, Quaternion.identity);
 

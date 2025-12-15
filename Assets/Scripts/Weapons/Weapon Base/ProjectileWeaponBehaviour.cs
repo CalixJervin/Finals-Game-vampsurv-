@@ -18,6 +18,9 @@ public class ProjectileWeaponBehaviour : MonoBehaviour
 
     public float rotationOffset = -45f;
 
+    [Header("Targeting")]
+    public float detectionRange = 10f;
+
     void Awake()
     {
         currentDamage = weaponData.Damage;
@@ -104,7 +107,7 @@ public class ProjectileWeaponBehaviour : MonoBehaviour
         }
 
         // 2. If we found an enemy, calculate direction towards it
-        if (closestEnemy != null)
+        if (closestEnemy != null && minDistance <= detectionRange)
         {
             // Vector math: Target Position - My Position = Direction
             Vector3 targetDir = (closestEnemy.transform.position - transform.position).normalized;

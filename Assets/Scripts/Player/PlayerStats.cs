@@ -49,7 +49,7 @@ public class PlayerStats : MonoBehaviour
     float invincibilityTimer;
     bool isInvincible;
 
-
+    HealthBarScript healthBar;
 
     public List<LevelRange> levelRanges;
 
@@ -84,6 +84,11 @@ public class PlayerStats : MonoBehaviour
         {
             currentHealth = playerData.MaxHealth;
         }
+
+        if (healthBar != null)
+        {
+            healthBar.SetHealth(currentHealth);
+        }
     }
 
     void LevelUpChecker()
@@ -109,7 +114,7 @@ public class PlayerStats : MonoBehaviour
     void Awake()
     {
         playerData = CharacterSelector.GetData();
-        CharacterSelector.instance.DestroySingleton();
+        //CharacterSelector.instance.DestroySingleton();
 
         currentHealth = playerData.MaxHealth;
         currentMoveSpeed = playerData.MoveSpeed;
@@ -119,6 +124,12 @@ public class PlayerStats : MonoBehaviour
         currentMagnet = playerData.Magnet;
         currentPoints = playerData.Points;
 
+        healthBar = FindObjectOfType<HealthBarScript>();
+        if (healthBar != null)
+        {
+            healthBar.SetMaxHealth(currentHealth);
+        }
+
         SpawnWeapon(playerData.StartingWeapon);
     }
 
@@ -127,6 +138,12 @@ public class PlayerStats : MonoBehaviour
         if(!isInvincible)
         {
             currentHealth -= dmg;
+
+            if (healthBar != null)
+            {
+                healthBar.SetHealth(currentHealth);
+            }
+
             isInvincible = true;
             invincibilityTimer = invincibilityDuration;
             
@@ -149,6 +166,24 @@ public class PlayerStats : MonoBehaviour
     public void Kill()
     {
         Debug.Log("Player Died");
+        // 1. Find the Manager in the scene (since the player might be a prefab)
+        GameOverManager gm = FindObjectOfType<GameOverManager>();
+        
+        // 2. Trigger the UI
+        if (gm != null)
+        {
+            gm.TriggerGameOver();
+        }
+        else
+        {
+            Debug.LogWarning("GameOverManager not found in the scene!");
+        }
+
+        // Optional: Destroy player or just hide them so the camera doesn't break
+        // Destroy(gameObject); // Don't do this if your camera follows the player!
+        // Instead, just disable the sprite to make them "disappear"
+        GetComponent<SpriteRenderer>().enabled = false;
+        GetComponent<Collider2D>().enabled = false;
     }
 
     public void SpawnWeapon(GameObject weapon)
@@ -161,7 +196,9 @@ public class PlayerStats : MonoBehaviour
     public void IncreaseScore(float amount)
     {
         currentPoints += amount;
-        Debug.Log("Current Score: " + currentPoints); // Useful to check if it works
-        
+        if (ScoreManager.instance != null)
+        {
+            ScoreManager.instance.UpdateScoreDisplay(currentPoints);
+        }
     }
 }
